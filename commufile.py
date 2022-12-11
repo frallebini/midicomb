@@ -34,7 +34,7 @@ class CommuFile(MidiFile_):
     def _set_channel(self) -> None:
         CommuFile.channel_count += 1
         if CommuFile.channel_count == 10:  
-            # channel 10 is reserved to percussions, and there are no percussions in ComMU
+            # channel 10 is reserved to percussions — there are no percussions in ComMU
             CommuFile.channel_count += 1
         for message in self._get_track():
             if message.type == 'program_change' or message.type == 'note_on':
@@ -59,5 +59,3 @@ if __name__ == '__main__':
     ]
     merged = midis[0].merge(midis[1]).concat(midis[2].merge(midis[3]))
     merged.save('merged.mid')
-    
-    brk = 1

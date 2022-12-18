@@ -1,7 +1,7 @@
-import pandas as pd
 import yaml
 from mido import MidiTrack, merge_tracks
 
+from commudset import DSET
 from midifile import MidiFile_
 
 
@@ -9,11 +9,11 @@ class CommuFile(MidiFile_):
 
     channel_count = -1
     
-    def __init__(self, filename: str, track_role: str, instrument: str) -> None:
-        super().__init__(filename)
+    def __init__(self, id: str, split: str, track_role: str, instrument: str) -> None:
+        super().__init__(f'dataset/commu_midi/{split}/raw/{id}.mid')
         self._move_meta()
         self._set_role(track_role)
-        with open('gm1.yaml') as f:
+        with open('cfg/inst_to_prog.yaml') as f:
             inst_to_prog = yaml.safe_load(f)
         self._set_program(inst_to_prog[instrument])
         self._set_channel()
@@ -46,16 +46,13 @@ class CommuFile(MidiFile_):
 
 
 if __name__ == '__main__':
-    ds = pd.read_csv('dataset/commu_meta.csv')
-    get_value = lambda id, col: ds[ds['id'] == id][col].values[0]
-
     ids = ['commu00001', 'commu00002', 'commu00003', 'commu00004']
     midis = [
         CommuFile(
-            f'dataset/commu_midi/train/raw/{id}.mid',
-            get_value(id, 'track_role'), 
-            get_value(id, 'inst')
+            id, 'train',
+            DSET.get_track_role(id), 
+            DSET.get_instrument(id),
         ) for id in ids
     ]
     merged = midis[0].merge(midis[1]).concat(midis[2].merge(midis[3]))
-    merged.save('merged.mid')
+    merged.save('out/merged.mid')

@@ -1,13 +1,6 @@
-# key–value pairs 
-#   instrument: program_number
-# where
-#   - instrument is an 'inst' value in dataset/commu_meta.csv
-#   - program_number is an integer 0–127
-#
-# The mapping is taken from General MIDI 1 (GM1) 
+# The following mapping is taken from General MIDI 1 (GM1) 
 # (https://www.midi.org/specifications/midi1-specifications/general-midi-specifications/general-midi-1)
 # and adapted — sometimes with a bit of creativity — to the instrument names found in dataset/commu_meta.csv
-#
 acoustic_piano: 0
 string_ensemble: 48
 synth_pad: 88

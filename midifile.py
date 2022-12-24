@@ -15,36 +15,33 @@ class MidiFile_(MidiFile):
 
     def concat(self, other: MidiFile_) -> MidiFile_:
         concatd = MidiFile_()
-        time = self.get_track_time(self)
-        other_shftd = self.shift(other, time)
+        time = self.get_track_time()
+        other_shftd = other.shift(time)
         concatd.tracks = self.tracks + other_shftd.tracks
         return concatd
 
-    @staticmethod
-    def get_track_time(mid: MidiFile_) -> int:
-        if not mid.tracks:
+    def get_track_time(self) -> int:
+        if not self.tracks:
             return 0
         times = []
-        for track in mid.tracks:
+        for track in self.tracks:
             times.append(0)
             for message in track:
                 times[-1] += message.time
         assert len(set(times)) == 1
         return times[0]
 
-    @classmethod
-    def shift(cls, mid: MidiFile_, time: int) -> MidiFile_:
-        shifted = cls.clone(mid)
+    def shift(self, time: int) -> MidiFile_:
+        shifted = self.clone()
         for track in shifted.tracks:
             for message in track:
                 if message.type == 'program_change':
                     message.time += time
         return shifted
 
-    @classmethod
-    def clone(cls, mid: MidiFile_) -> MidiFile_:
-        cloned = cls()
-        for track in mid.tracks:
+    def clone(self) -> MidiFile_:
+        cloned = MidiFile_()
+        for track in self.tracks:
             cloned.tracks.append(MidiTrack())
             for message in track:
                 cloned.tracks[-1].append(message)

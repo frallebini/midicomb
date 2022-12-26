@@ -1,14 +1,19 @@
+from collections import defaultdict
 from itertools import groupby
+import random
 from typing import Any
 
 import numpy as np
 import pandas as pd
+
+from commufile import CommuFile
 
 
 class CommuDataset:
 
     def __init__(self) -> None:
         self.df = pd.read_csv('dataset/commu_meta.csv')
+
         self.df.drop(columns=self.df.columns[0], inplace=True)
         self.df.rename(columns={
             'audio_key': 'key',
@@ -19,6 +24,55 @@ class CommuDataset:
         }, inplace=True)
         self._clean_chord_progression()
 
+    def get_samples(self,
+                    bpm: int, 
+                    key: str, 
+                    time_signature: str, 
+                    num_measures: int, 
+                    genre: str, 
+                    rhythm: str, 
+                    chord_progression: str) -> list[CommuFile]:
+        track_roles = self.get_track_roles()
+        valid_roles = set(track_roles)
+
+        track_count = 0
+        role_counts = defaultdict(int)
+        midis = []
+        indexes = []
+
+        while track_count < len(track_roles):
+            try:
+                track_role = random.choice(list(valid_roles))
+                sample = self.sample(
+                    track_role, 
+                    bpm, 
+                    key, 
+                    time_signature, 
+                    num_measures, 
+                    genre, 
+                    rhythm, 
+                    chord_progression)
+            except IndexError:  # no more valid track roles
+                break
+            except ValueError:  # no sample satifies the query
+                valid_roles = valid_roles - set(track_role)
+                continue
+            if sample.index.item() in indexes:  # the track has already been sampled
+                continue
+            midi = CommuFile(
+                sample.id.item(), 
+                sample.split.item(), 
+                track_role, 
+                sample.instrument.item())
+
+            track_count += 1
+            role_counts[track_role] += 1
+            midis.append(midi)
+            indexes.append(sample.index.item())
+            midi.save(f'out/{track_role}_{role_counts[track_role]}.mid')
+
+        return midis
+
     def sample(self, 
                track_role: str, 
                bpm: int, 
@@ -28,7 +82,7 @@ class CommuDataset:
                genre: str, 
                rhythm: str, 
                chord_progression: str) -> pd.DataFrame:
-        df = self.df[
+        return self.df[
             (self.df.track_role == track_role) &
             (self.df.bpm == bpm) &
             (self.df.key == key) &
@@ -36,11 +90,9 @@ class CommuDataset:
             (self.df.num_measures == num_measures) &
             (self.df.genre == genre) &
             (self.df.rhythm == rhythm) &
-            (self.df.chord_progression == chord_progression)]
-        if df.empty:
-            raise Exception('Cannot sample from an empty DataFrame')
-        return df.sample()
-
+            (self.df.chord_progression == chord_progression)
+        ].sample()
+    
     def get_track_roles(self) -> np.ndarray:
         return self.df.track_role.unique()
 

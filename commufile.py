@@ -1,7 +1,6 @@
 import yaml
 from mido import MidiTrack, merge_tracks
 
-from commudset import DSET
 from midifile import MidiFile_
 
 
@@ -46,6 +45,7 @@ class CommuFile(MidiFile_):
 
 
 if __name__ == '__main__':
+    from commudset import DSET
     ids = ['commu00001', 'commu00002', 'commu00003', 'commu00004']
     midis = [
         CommuFile(

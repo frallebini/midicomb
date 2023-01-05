@@ -13,6 +13,12 @@ class MidiFile_(MidiFile):
         merged.tracks = self.tracks + other.tracks
         return merged
 
+    @staticmethod
+    def merge(midis: list[MidiFile_]) -> MidiFile_:
+        merged = MidiFile_()
+        merged.tracks = [track for midi in midis for track in midi.tracks]
+        return merged
+        
     def concat(self, other: MidiFile_) -> MidiFile_:
         concatd = MidiFile_()
         time = self.get_track_time()

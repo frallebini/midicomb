@@ -11,7 +11,7 @@ class CommuFile(MidiFile_):
     def __init__(self, id: str, split: str, track_role: str, instrument: str) -> None:
         super().__init__(f'dataset/commu_midi/{split}/raw/{id}.mid')
         self._move_meta()
-        self._set_role(track_role)
+        self._set_name(track_role)
         with open('cfg/inst_to_prog.yaml') as f:
             inst_to_prog = yaml.safe_load(f)
         self._set_program(inst_to_prog[instrument])
@@ -22,8 +22,8 @@ class CommuFile(MidiFile_):
         assert [message.is_meta for message in self.tracks[0]]
         self.tracks = [merge_tracks(self.tracks)]
 
-    def _set_role(self, role: str) -> None:
-        self._get_track().name = role 
+    def _set_name(self, name: str) -> None:
+        self._get_track().name = name 
 
     def _set_program(self, program: int) -> None:
         for message in self._get_track():

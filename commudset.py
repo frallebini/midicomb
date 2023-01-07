@@ -43,7 +43,7 @@ class CommuDataset:
             rhythm, 
             chord_progression)
         
-        valid_roles = set(df_samples.track_role.unique())
+        valid_roles = set(df_samples.track_role.unique()) - {'riff'}  # we do not want more than one riff
         midi_count = len(df_samples)
         indexes = df_samples.index.tolist()
 

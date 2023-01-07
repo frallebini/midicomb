@@ -5,7 +5,7 @@ from mido import MidiFile, MidiTrack
 
 class MidiFile_(MidiFile):
 
-    def __init__(self, filename: str | None = None):
+    def __init__(self, filename: str | None = None) -> None:
         super().__init__(filename)
 
     def merge(self, other: MidiFile_) -> MidiFile_:

@@ -1,8 +1,7 @@
-from datetime import datetime
 import random
 from collections import defaultdict
+from datetime import datetime
 from itertools import groupby
-from typing import Any
 
 import pandas as pd
 
@@ -13,16 +12,7 @@ class CommuDataset:
 
     def __init__(self) -> None:
         self.df = pd.read_csv('dataset/commu_meta.csv')
-
-        self.df.drop(columns=self.df.columns[0], inplace=True)
-        self.df.rename(columns={
-            'audio_key': 'key',
-            'chord_progressions': 'chord_progression',
-            'inst': 'instrument',
-            'sample_rhythm': 'rhythm',
-            'split_data': 'split'
-        }, inplace=True)
-        self._clean_chord_progression()
+        self._preprocess()
 
     def sample_midis(
             self,
@@ -34,7 +24,7 @@ class CommuDataset:
             rhythm: str, 
             chord_progression: str,
             now: datetime) -> dict[str, list[CommuFile]]:
-        df_samples = self._get_sample_foreach_track_role(
+        df_samples = self._get_sample_foreach_role(
             bpm, 
             key, 
             time_signature, 
@@ -49,9 +39,9 @@ class CommuDataset:
 
         while midi_count < len(self.df.track_role.unique()):
             try:
-                track_role = random.choice(list(valid_roles))
+                role = random.choice(list(valid_roles))
                 sample = self._get_sample(
-                    track_role, 
+                    role, 
                     bpm, 
                     key, 
                     time_signature, 
@@ -62,7 +52,7 @@ class CommuDataset:
             except IndexError:  # no more valid track roles
                 break
             except ValueError:  # no sample satifies the query
-                valid_roles = valid_roles - set(track_role)
+                valid_roles = valid_roles - set(role)
                 continue
             if sample.index.item() in indexes:  # do not sample same entry twice
                 continue
@@ -76,20 +66,20 @@ class CommuDataset:
 
         for i in df_samples.index:
             sample = df_samples[df_samples.index == i]
-            track_role = sample.track_role.item()
-            name = f'{track_role}_{role_counts[track_role]}'
+            role = sample.track_role.item()
+            name = f'{role}_{role_counts[role]}'
             midi = CommuFile(
                 sample.id.item(), 
                 sample.split.item(), 
                 name, 
                 sample.instrument.item())
             midi.save(f'out/{now}/{name}.mid')
-            role_counts[track_role] += 1
-            role_to_midis[track_role].append(midi)
+            role_counts[role] += 1
+            role_to_midis[role].append(midi)
 
         return role_to_midis
 
-    def _get_sample_foreach_track_role(
+    def _get_sample_foreach_role(
             self, 
             bpm: int, 
             key: str, 
@@ -106,10 +96,12 @@ class CommuDataset:
             (self.df.genre == genre) &
             (self.df.rhythm == rhythm) &
             (self.df.chord_progression == chord_progression)]
+        
         samples = []
         for role in df_query.track_role.unique():
             df_role = df_query[df_query.track_role == role]
             samples.append(df_role.sample())
+        
         return pd.concat(samples)
 
     def _get_sample(
@@ -133,6 +125,17 @@ class CommuDataset:
             (self.df.chord_progression == chord_progression)
         ].sample()
 
+    def _preprocess(self) -> None:
+        self.df.drop(columns=self.df.columns[0], inplace=True)
+        self.df.rename(columns={
+            'audio_key': 'key',
+            'chord_progressions': 'chord_progression',
+            'inst': 'instrument',
+            'sample_rhythm': 'rhythm',
+            'split_data': 'split'
+        }, inplace=True)
+        self._clean_chord_progression()
+
     def _clean_chord_progression(self) -> None:
         # BEFORE:
         # "[['Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 
@@ -150,4 +153,4 @@ class CommuDataset:
                 )[1:-1].replace('\'', '').replace(', ', '-'))
 
 
-DSET = CommuDataset()
+DSET = CommuDataset()  # singleton

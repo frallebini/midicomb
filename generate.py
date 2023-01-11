@@ -6,7 +6,7 @@ from pathlib import Path
 from ortools.sat.python import cp_model
 
 from commudset import DSET
-from midifile import MidiFile_
+from commufile import merge
 
 
 bpm = 130
@@ -30,8 +30,8 @@ role_to_midis = DSET.sample_midis(
     chord_progression,
     now)
 
-role_to_times = {role: [midi.get_track_time() for midi in midis] for role, midis in role_to_midis.items()}
-horizon = sum(time for times in role_to_times.values() for time in times)
+role_to_durations = {role: [midi.duration for midi in midis] for role, midis in role_to_midis.items()}
+horizon = sum(duration for durations in role_to_durations.values() for duration in durations)
 model = cp_model.CpModel()
 
 Track = namedtuple('Track', 'start end interval')
@@ -40,26 +40,26 @@ role_to_tracks_opt = defaultdict(list)
 role_to_intervals = defaultdict(list)
 role_to_repeats = defaultdict(list)
 
-for track_role, times in role_to_times.items():
-    for i, time in enumerate(times):
-        suffix = f'{track_role}_{i}'
+for role, durations in role_to_durations.items():
+    for i, duration in enumerate(durations):
+        suffix = f'{role}_{i}'
         
         start = model.NewIntVar(0, horizon, f'start_{suffix}')
         end = model.NewIntVar(0, horizon, f'end_{suffix}')
-        interval = model.NewIntervalVar(start, time, end, f'interval_{suffix}')
+        interval = model.NewIntervalVar(start, duration, end, f'interval_{suffix}')
 
         start_opt = model.NewIntVar(0, horizon, f'start_opt_{suffix}')
         end_opt = model.NewIntVar(0, horizon, f'end_opt_{suffix}')
         is_present = model.NewBoolVar(f'is_present_{suffix}')
-        interval_opt = model.NewOptionalIntervalVar(start_opt, time, end_opt, is_present, f'interval_opt_{suffix}')
+        interval_opt = model.NewOptionalIntervalVar(start_opt, duration, end_opt, is_present, f'interval_opt_{suffix}')
 
-        role_to_tracks[track_role].append(Track(start, end, interval))
-        role_to_tracks_opt[track_role].append(Track(start_opt, end_opt, interval_opt))
+        role_to_tracks[role].append(Track(start, end, interval))
+        role_to_tracks_opt[role].append(Track(start_opt, end_opt, interval_opt))
 
-        role_to_intervals[track_role].append(interval)
-        role_to_intervals[track_role].append(interval_opt)
+        role_to_intervals[role].append(interval)
+        role_to_intervals[role].append(interval_opt)
 
-        role_to_repeats[track_role].append(is_present)
+        role_to_repeats[role].append(is_present)
 
 tracks = \
     [track for tracks in role_to_tracks.values() for track in tracks] + \
@@ -68,8 +68,8 @@ intervals = [interval for intervals in role_to_intervals.values() for interval i
 repeats = [repeat for repeats in role_to_repeats.values() for repeat in repeats]
 
 # samples with same track role do not overlap
-for track_role in role_to_intervals.keys():
-    model.AddNoOverlap(role_to_intervals[track_role])
+for role in role_to_intervals.keys():
+    model.AddNoOverlap(role_to_intervals[role])
 
 # play no more than x samples at the same time, where x depends on the track role
 role_to_demand = {
@@ -122,7 +122,7 @@ if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             shifted_midis.append(midi.shift(solver.Value(role_to_tracks[role][i].start)))
             if solver.Value(role_to_repeats[role][i]):
                 shifted_midis.append(midi.shift(solver.Value(role_to_tracks_opt[role][i].start)))
-    merged = MidiFile_.merge(shifted_midis)
+    merged = merge(shifted_midis)
     merged.save(f'out/{now}/merged.mid')
 
 elif status == cp_model.INFEASIBLE:

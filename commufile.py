@@ -1,19 +1,40 @@
+from __future__ import annotations
+
+import copy
+
 import yaml
-from mido import MidiTrack, merge_tracks
-
-from midifile import MidiFile_
+from mido import MidiFile, MidiTrack, merge_tracks
 
 
-class CommuFile(MidiFile_):
+class CommuFile(MidiFile):
 
     channel_count = -1
     
     def __init__(self, id: str, split: str, track_role: str, instrument: str) -> None:
         super().__init__(f'dataset/commu_midi/{split}/raw/{id}.mid')
-        self._move_meta()
-        self._set_name(track_role)
+        self._preprocess(track_role, instrument)
+
+    @property
+    def track(self) -> MidiTrack:
+        assert len(self.tracks) == 1
+        return self.tracks[0]
+
+    @property
+    def duration(self) -> int:
+        return sum(message.time for message in self.track)
+
+    def shift(self, time: int) -> CommuFile:
+        shifted = copy.deepcopy(self)
+        for message in shifted.track:
+            if message.type == 'program_change':
+                message.time += time
+        return shifted
+        
+    def _preprocess(self, track_role: str, instrument: str) -> None:
         with open('cfg/inst_to_prog.yaml') as f:
             inst_to_prog = yaml.safe_load(f)
+        self._move_meta()
+        self._set_name(track_role)
         self._set_program(inst_to_prog[instrument])
         self._set_channel()
 
@@ -23,22 +44,24 @@ class CommuFile(MidiFile_):
         self.tracks = [merge_tracks(self.tracks)]
 
     def _set_name(self, name: str) -> None:
-        self._get_track().name = name 
+        self.track.name = name 
 
     def _set_program(self, program: int) -> None:
-        for message in self._get_track():
+        for message in self.track:
             if message.type == 'program_change':
                 message.program = program
 
     def _set_channel(self) -> None:
         CommuFile.channel_count += 1
         if CommuFile.channel_count == 10:  
-            # channel 10 is reserved to percussions — there are no percussions in ComMU
+            # channel 10 is reserved to percussions, but there are no percussions in ComMU
             CommuFile.channel_count += 1
-        for message in self._get_track():
+        for message in self.track:
             if message.type == 'program_change' or message.type == 'note_on':
                 message.channel = CommuFile.channel_count
 
-    def _get_track(self) -> MidiTrack:
-        assert len(self.tracks) == 1
-        return self.tracks[0]
+
+def merge(midis: list[CommuFile]) -> MidiFile:
+    merged = MidiFile()
+    merged.tracks = [midi.track for midi in midis]
+    return merged

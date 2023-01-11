@@ -24,7 +24,7 @@ class CommuDataset:
         }, inplace=True)
         self._clean_chord_progression()
 
-    def get_midis(
+    def sample_midis(
             self,
             bpm: int, 
             key: str, 
@@ -34,7 +34,7 @@ class CommuDataset:
             rhythm: str, 
             chord_progression: str,
             now: datetime) -> dict[str, list[CommuFile]]:
-        df_samples = self.get_sample_foreach_track_role(
+        df_samples = self._get_sample_foreach_track_role(
             bpm, 
             key, 
             time_signature, 
@@ -47,10 +47,10 @@ class CommuDataset:
         midi_count = len(df_samples)
         indexes = df_samples.index.tolist()
 
-        while midi_count < len(self.get_track_roles()):
+        while midi_count < len(self.df.track_role.unique()):
             try:
                 track_role = random.choice(list(valid_roles))
-                sample = self.get_sample(
+                sample = self._get_sample(
                     track_role, 
                     bpm, 
                     key, 
@@ -89,7 +89,7 @@ class CommuDataset:
 
         return role_to_midis
 
-    def get_sample_foreach_track_role(
+    def _get_sample_foreach_track_role(
             self, 
             bpm: int, 
             key: str, 
@@ -112,7 +112,7 @@ class CommuDataset:
             samples.append(df_role.sample())
         return pd.concat(samples)
 
-    def get_sample(
+    def _get_sample(
             self, 
             track_role: str, 
             bpm: int, 
@@ -132,16 +132,16 @@ class CommuDataset:
             (self.df.rhythm == rhythm) &
             (self.df.chord_progression == chord_progression)
         ].sample()
-    
-    def get_track_roles(self) -> list[str]:
-        return self.df.track_role.unique().tolist()
 
+    # TODO: delete
     def get_track_role(self, id: str) -> str:
         return self._get_value(id, 'track_role')
 
+    # TODO: delete
     def get_instrument(self, id: str) -> str:
         return self._get_value(id, 'instrument')
 
+    # TODO: delete
     def _get_value(self, id: str, col: str) -> Any:
         return self.df[self.df.id == id][col].item()
 

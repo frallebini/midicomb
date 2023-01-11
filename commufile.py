@@ -42,17 +42,3 @@ class CommuFile(MidiFile_):
     def _get_track(self) -> MidiTrack:
         assert len(self.tracks) == 1
         return self.tracks[0]
-
-
-if __name__ == '__main__':
-    from commudset import DSET
-    ids = ['commu00001', 'commu00002', 'commu00003', 'commu00004']
-    midis = [
-        CommuFile(
-            id, 'train',
-            DSET.get_track_role(id), 
-            DSET.get_instrument(id),
-        ) for id in ids
-    ]
-    merged = midis[0].merge(midis[1]).concat(midis[2].merge(midis[3]))
-    merged.save('out/merged.mid')

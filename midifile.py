@@ -9,26 +9,12 @@ class MidiFile_(MidiFile):
 
     def __init__(self, filename: str | None = None) -> None:
         super().__init__(filename)
-
-    # TODO: delete
-    def merge(self, other: MidiFile_) -> MidiFile_:
-        merged = MidiFile_()
-        merged.tracks = self.tracks + other.tracks
-        return merged
-
+        
     @classmethod
     def merge(cls, midis: list[MidiFile_]) -> MidiFile_:
         merged = cls()
         merged.tracks = [track for midi in midis for track in midi.tracks]
         return merged
-    
-    # TODO: delete
-    def concat(self, other: MidiFile_) -> MidiFile_:
-        concatd = MidiFile_()
-        time = self.get_track_time()
-        other_shftd = other.shift(time)
-        concatd.tracks = self.tracks + other_shftd.tracks
-        return concatd
 
     def get_track_time(self) -> int:
         if not self.tracks:
@@ -48,12 +34,3 @@ class MidiFile_(MidiFile):
                 if message.type == 'program_change':
                     message.time += time
         return shifted
-
-    # TODO: delete
-    def _clone(self) -> MidiFile_:
-        cloned = MidiFile_()
-        for track in self.tracks:
-            cloned.tracks.append(MidiTrack())
-            for message in track:
-                cloned.tracks[-1].append(message)
-        return cloned

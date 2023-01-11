@@ -133,18 +133,6 @@ class CommuDataset:
             (self.df.chord_progression == chord_progression)
         ].sample()
 
-    # TODO: delete
-    def get_track_role(self, id: str) -> str:
-        return self._get_value(id, 'track_role')
-
-    # TODO: delete
-    def get_instrument(self, id: str) -> str:
-        return self._get_value(id, 'instrument')
-
-    # TODO: delete
-    def _get_value(self, id: str, col: str) -> Any:
-        return self.df[self.df.id == id][col].item()
-
     def _clean_chord_progression(self) -> None:
         # BEFORE:
         # "[['Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 

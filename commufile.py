@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import copy
 
-import yaml
+from hesiod import hcfg
 from mido import MidiFile, MidiTrack, merge_tracks
 
 
@@ -31,11 +31,9 @@ class CommuFile(MidiFile):
         return shifted
         
     def _preprocess(self, track_role: str, instrument: str) -> None:
-        with open('cfg/inst_to_prog.yaml') as f:
-            inst_to_prog = yaml.safe_load(f)
         self._move_meta()
         self._set_name(track_role)
-        self._set_program(inst_to_prog[instrument])
+        self._set_program(hcfg('programs', dict)[instrument])
         self._set_channel()
 
     def _move_meta(self) -> None:

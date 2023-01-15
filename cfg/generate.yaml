@@ -1,0 +1,21 @@
+programs:
+  base: programs
+
+bpm: 130
+key: aminor
+time_signature: 4/4
+num_measures: 8
+genre: newage
+rhythm: standard
+chord_progression: Am-F-C-G-Am-F-C-G
+
+debug: true
+
+capacity: 6
+demands:
+  main_melody: 3
+  sub_melody: 3
+  riff: 3
+  accompaniment: 2
+  pad: 1
+  bass: 1

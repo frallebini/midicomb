@@ -1,8 +1,7 @@
 import itertools
 from collections import defaultdict, namedtuple
-from datetime import datetime
 
-from hesiod import hcfg
+import yaml
 from ortools.sat.python import cp_model
 
 from commufile import CommuFile, merge
@@ -10,7 +9,10 @@ from commufile import CommuFile, merge
 
 class MidiComb():
 
-    def __init__(self, role_to_midis: dict[str, list[CommuFile]], timestamp: datetime) -> None:
+    def __init__(self, role_to_midis: dict[str, list[CommuFile]], timestamp: str) -> None:
+        with open('cfg/midicomb.yaml') as f:
+             self.cfg = yaml.safe_load(f)
+
         self.role_to_midis = role_to_midis
         self.timestamp = timestamp
 
@@ -29,7 +31,7 @@ class MidiComb():
         
         role_to_intervals = defaultdict(list)
         track_to_overlaps = defaultdict(list)
-        role_to_demand = hcfg('demands', dict)
+        role_to_demand = self.cfg['demands']
         pairs_to_info = {}
         alones = []
 
@@ -78,7 +80,7 @@ class MidiComb():
 
         # play no more than x samples at the same time, where x depends on the track role
         demands = [role_to_demand[role] for role, intervals in role_to_intervals.items() for _ in intervals]
-        self.model.AddCumulative(intervals, demands, 6)
+        self.model.AddCumulative(intervals, demands, self.cfg['capacity'])
 
         # if two samples overlap, make them start at the same time
         for t1, t2 in itertools.combinations(tracks, 2):
@@ -94,8 +96,16 @@ class MidiComb():
             self.model.Add(t2.end <= t1.start).OnlyEnforceIf(t2_before_t1)
             self.model.Add(t2.end > t1.start).OnlyEnforceIf(t2_before_t1.Not())
 
-            self.model.AddBoolOr([t1_before_t2, t2_before_t1, t1.is_present.Not(), t2.is_present.Not()]).OnlyEnforceIf(overlap.Not())
-            self.model.AddBoolAnd([t1_before_t2.Not(), t2_before_t1.Not(), t1.is_present, t2.is_present]).OnlyEnforceIf(overlap)
+            self.model.AddBoolOr([
+                t1_before_t2, 
+                t2_before_t1, 
+                t1.is_present.Not(), 
+                t2.is_present.Not()]).OnlyEnforceIf(overlap.Not())
+            self.model.AddBoolAnd([
+                t1_before_t2.Not(), 
+                t2_before_t1.Not(), 
+                t1.is_present, 
+                t2.is_present]).OnlyEnforceIf(overlap)
             self.model.Add(t1.start == t2.start).OnlyEnforceIf(overlap)
 
             pairs_to_info[t1, t2] = TrackPairInfo(t1_before_t2, t2_before_t1, overlap)
@@ -111,8 +121,8 @@ class MidiComb():
 
             for (t1, t2), info in pairs_to_info.items():
                 if t1 is track or t2 is track:
-                    self.model.Add(t2.start >= t1.end + 4000).OnlyEnforceIf([info.t1_before_t2, alone])
-                    self.model.Add(t1.start >= t2.end + 4000).OnlyEnforceIf([info.t2_before_t1, alone])
+                    self.model.Add(t2.start >= t1.end + self.cfg['padding']).OnlyEnforceIf([info.t1_before_t2, alone])
+                    self.model.Add(t1.start >= t2.end + self.cfg['padding']).OnlyEnforceIf([info.t2_before_t1, alone])
                     
             alones.append(alone)
 
@@ -133,7 +143,7 @@ class MidiComb():
 
     def solve(self) -> None:
         solver = cp_model.CpSolver()
-        status = solver.Solve(self.model, self.printer if hcfg('debug', bool) else None)
+        status = solver.Solve(self.model, self.printer if self.cfg['debug'] else None)
 
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             shifted_midis = []

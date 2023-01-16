@@ -1,6 +1,5 @@
 import random
 from collections import defaultdict
-from datetime import datetime
 from itertools import groupby
 
 import pandas as pd
@@ -21,16 +20,14 @@ class CommuDataset:
             time_signature: str, 
             num_measures: int, 
             genre: str, 
-            rhythm: str, 
             chord_progression: str,
-            timestamp: datetime) -> dict[str, list[CommuFile]]:
+            timestamp: str) -> dict[str, list[CommuFile]]:
         df_samples = self._get_sample_foreach_role(
             bpm, 
             key, 
             time_signature, 
             num_measures, 
             genre, 
-            rhythm, 
             chord_progression)
         
         valid_roles = set(df_samples.track_role.unique()) - {'riff'}  # we do not want more than one riff
@@ -47,7 +44,6 @@ class CommuDataset:
                     time_signature, 
                     num_measures, 
                     genre, 
-                    rhythm, 
                     chord_progression)
             except IndexError:  # no more valid track roles
                 break
@@ -86,7 +82,6 @@ class CommuDataset:
             time_signature: str, 
             num_measures: int, 
             genre: str, 
-            rhythm: str, 
             chord_progression: str) -> pd.DataFrame:
         df_query = self.df[
             (self.df.bpm == bpm) &
@@ -94,7 +89,7 @@ class CommuDataset:
             (self.df.time_signature == time_signature) &
             (self.df.num_measures == num_measures) &
             (self.df.genre == genre) &
-            (self.df.rhythm == rhythm) &
+            (self.df.rhythm == 'standard') &
             (self.df.chord_progression == chord_progression)]
         
         samples = []
@@ -112,7 +107,6 @@ class CommuDataset:
             time_signature: str, 
             num_measures: int, 
             genre: str, 
-            rhythm: str, 
             chord_progression: str) -> pd.DataFrame:
         return self.df[
             (self.df.track_role == track_role) &
@@ -121,7 +115,7 @@ class CommuDataset:
             (self.df.time_signature == time_signature) &
             (self.df.num_measures == num_measures) &
             (self.df.genre == genre) &
-            (self.df.rhythm == rhythm) &
+            (self.df.rhythm == 'standard') &
             (self.df.chord_progression == chord_progression)
         ].sample()
 

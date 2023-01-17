@@ -15,19 +15,21 @@ class CommuDataset:
 
     def sample_midis(
             self,
-            bpm: int, 
-            key: str, 
-            time_signature: str, 
-            num_measures: int, 
-            genre: str, 
+            bpm: int,
+            key: str,
+            time_signature: str,
+            num_measures: int,
+            genre: str,
+            rhythm: str,
             chord_progression: str,
             timestamp: str) -> dict[str, list[CommuFile]]:
         df_samples = self._get_sample_foreach_role(
-            bpm, 
-            key, 
-            time_signature, 
-            num_measures, 
-            genre, 
+            bpm,
+            key,
+            time_signature,
+            num_measures,
+            genre,
+            rhythm,
             chord_progression)
         
         valid_roles = set(df_samples.track_role.unique()) - {'riff'}  # we do not want more than one riff
@@ -38,12 +40,13 @@ class CommuDataset:
             try:
                 role = random.choice(list(valid_roles))
                 sample = self._get_sample(
-                    role, 
-                    bpm, 
-                    key, 
-                    time_signature, 
-                    num_measures, 
-                    genre, 
+                    role,
+                    bpm,
+                    key,
+                    time_signature,
+                    num_measures,
+                    genre,
+                    rhythm,
                     chord_progression)
             except IndexError:  # no more valid track roles
                 break
@@ -76,12 +79,13 @@ class CommuDataset:
         return role_to_midis
 
     def _get_sample_foreach_role(
-            self, 
-            bpm: int, 
-            key: str, 
-            time_signature: str, 
-            num_measures: int, 
-            genre: str, 
+            self,
+            bpm: int,
+            key: str,
+            time_signature: str,
+            num_measures: int,
+            genre: str,
+            rhythm: str,
             chord_progression: str) -> pd.DataFrame:
         df_query = self.df[
             (self.df.bpm == bpm) &
@@ -89,8 +93,14 @@ class CommuDataset:
             (self.df.time_signature == time_signature) &
             (self.df.num_measures == num_measures) &
             (self.df.genre == genre) &
-            (self.df.rhythm == 'standard') &
+            (self.df.rhythm == rhythm) &
             (self.df.chord_progression == chord_progression)]
+
+        if df_query.empty:
+            raise ValueError(
+                'No sample satifies the given conjunction of bpm, key, time-signature, ' +
+                'num_meaures, genre, rhythm, and chord-progression values. ' +
+                'Please try again with different values.')
         
         samples = []
         for role in df_query.track_role.unique():
@@ -100,13 +110,14 @@ class CommuDataset:
         return pd.concat(samples)
 
     def _get_sample(
-            self, 
-            track_role: str, 
-            bpm: int, 
-            key: str, 
-            time_signature: str, 
-            num_measures: int, 
-            genre: str, 
+            self,
+            track_role: str,
+            bpm: int,
+            key: str,
+            time_signature: str,
+            num_measures: int,
+            genre: str,
+            rhythm: str,
             chord_progression: str) -> pd.DataFrame:
         return self.df[
             (self.df.track_role == track_role) &
@@ -115,7 +126,7 @@ class CommuDataset:
             (self.df.time_signature == time_signature) &
             (self.df.num_measures == num_measures) &
             (self.df.genre == genre) &
-            (self.df.rhythm == 'standard') &
+            (self.df.rhythm == rhythm) &
             (self.df.chord_progression == chord_progression)
         ].sample()
 

@@ -7,16 +7,19 @@ import yaml
 from commudset import DSET
 from midicomb import MidiComb
 
-# python generate.py --bpm 130 --key aminor --time_signature 4/4 --num_measures 8 --genre newage --chord_progression Am-F-C-G-Am-F-C-G
-
+# python generate.py --bpm 130 --key aminor --time_signature 4/4 --num_measures 8 --genre newage --rhythm standard --chord_progression Am-F-C-G-Am-F-C-G
+# python generate.py --bpm 80 --key aminor --time_signature 4/4 --num_measures 8 --genre cinematic --rhythm standard --chord_progression Am-Gmaj7-Fmaj7-G-Cmaj7-Dm7-Am-A#maj7-E+-Am
+# python generate.py --bpm 120 --key cmajor --time_signature 4/4 --num_measures 8 --genre cinematic --rhythm standard --chord_progression C-F-Am-G
+# python generate.py --bpm 100 --key cmajor --time_signature 4/4 --num_measures 4 --genre newage --rhythm standard --chord_progression F-G-Em-Am-F-G-Em-Am
 
 def main(args: argparse.Namespace, timestamp: str) -> None:
     role_to_midis = DSET.sample_midis(
-        args.bpm, 
-        args.key, 
-        args.time_signature, 
-        args.num_measures, 
-        args.genre, 
+        args.bpm,
+        args.key,
+        args.time_signature,
+        args.num_measures,
+        args.genre,
+        args.rhythm,
         args.chord_progression,
         timestamp)
 
@@ -30,7 +33,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--bpm', dest='bpm', 
-        type=int, required=True)#, choices=meta['bpm'])
+        type=int, required=True, choices=meta['bpm'])
     parser.add_argument(
         '--key', dest='key', 
         type=str, required=True, choices=meta['key'])
@@ -43,6 +46,9 @@ if __name__ == "__main__":
     parser.add_argument(
         '--genre', dest='genre', 
         type=str, required=True, choices=meta['genre'])
+    parser.add_argument(
+        '--rhythm', dest='rhythm', 
+        type=str, required=True, choices=meta['rhythm'])
     parser.add_argument(
         '--chord_progression', dest='chord_progression', 
         type=str, required=True, choices=meta['chord_progression'])

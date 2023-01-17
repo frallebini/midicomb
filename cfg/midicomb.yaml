@@ -1,8 +1,8 @@
 capacity: 6
 demands:
   main_melody: 3
-  sub_melody: 3
   riff: 3
+  sub_melody: 2
   accompaniment: 2
   pad: 1
   bass: 1

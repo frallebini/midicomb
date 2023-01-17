@@ -21,7 +21,6 @@ class MidiComb():
         self.role_to_repeats = defaultdict(list)
 
         self.model = cp_model.CpModel()
-        self.printer = SolutionPrinter()
 
         self._add_constraints()
 
@@ -33,7 +32,6 @@ class MidiComb():
         track_to_overlaps = defaultdict(list)
         role_to_demand = self.cfg['demands']
         pairs_to_info = {}
-        alones = []
 
         role_to_durations = {role: [midi.duration for midi in midis] for role, midis in self.role_to_midis.items()}
         horizon = sum(duration for durations in role_to_durations.values() for duration in durations)
@@ -123,8 +121,6 @@ class MidiComb():
                 if t1 is track or t2 is track:
                     self.model.Add(t2.start >= t1.end + self.cfg['padding']).OnlyEnforceIf([info.t1_before_t2, alone])
                     self.model.Add(t1.start >= t2.end + self.cfg['padding']).OnlyEnforceIf([info.t2_before_t1, alone])
-                    
-            alones.append(alone)
 
         # repeat half of the samples
         self.model.Add(sum(repeats) == len(repeats)//2)
@@ -133,13 +129,6 @@ class MidiComb():
         makespan = self.model.NewIntVar(0, horizon, 'makespan')
         self.model.AddMaxEquality(makespan, [track.end for track in tracks])
         self.model.Minimize(makespan)
-
-        self.printer.add(
-            [track.is_present for track in tracks] +
-            [track.start for track in tracks] +
-            [track.end for track in tracks] +
-            alones +
-            [makespan])
 
     def solve(self) -> None:
         solver = cp_model.CpSolver()
@@ -164,17 +153,3 @@ class MidiComb():
             print('No solution found: invalid model')
         else:
             print('No solution found: the solver was stopped before reaching an endpoint')
-
-
-class SolutionPrinter(cp_model.CpSolverSolutionCallback):
-    def __init__(self) -> None:
-        super().__init__()
-        self.variables = []
-
-    def add(self, variables: list[cp_model.IntVar]) -> None:
-        self.variables += variables
-
-    def on_solution_callback(self) -> None:
-        for v in self.variables:
-            print(f'{v}={self.Value(v)}')
-        print()

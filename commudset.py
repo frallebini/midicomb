@@ -21,8 +21,7 @@ class CommuDataset:
             num_measures: int,
             genre: str,
             rhythm: str,
-            chord_progression: str,
-            timestamp: str) -> dict[str, list[CommuFile]]:
+            chord_progression: str) -> dict[str, list[CommuFile]]:
         df_samples = self._get_sample_foreach_role(
             bpm,
             key,
@@ -72,7 +71,6 @@ class CommuDataset:
                 sample.split.item(), 
                 name, 
                 sample.instrument.item())
-            midi.save(f'out/{timestamp}/{name}.mid')
             role_counts[role] += 1
             role_to_midis[role].append(midi)
 

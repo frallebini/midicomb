@@ -20,8 +20,7 @@ def main(args: argparse.Namespace, timestamp: str) -> None:
         args.num_measures,
         args.genre,
         args.rhythm,
-        args.chord_progression,
-        timestamp)
+        args.chord_progression)
 
     MidiComb(role_to_midis, timestamp).solve()
 

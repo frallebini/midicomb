@@ -10,9 +10,6 @@ from commufile import CommuFile, merge
 class MidiComb():
 
     def __init__(self, role_to_midis: dict[str, list[CommuFile]], timestamp: str) -> None:
-        with open('cfg/midicomb.yaml') as f:
-             self.cfg = yaml.safe_load(f)
-
         self.role_to_midis = role_to_midis
         self.timestamp = timestamp
 
@@ -25,12 +22,15 @@ class MidiComb():
         self._add_constraints()
 
     def _add_constraints(self) -> None:
+        with open('cfg/midicomb.yaml') as f:
+             cfg = yaml.safe_load(f)
+
         Track = namedtuple('Track', 'start end interval is_present')
         TrackPairInfo = namedtuple('TrackPairInfo', 't1_before_t2 t2_before_t1 overlap')
         
         role_to_intervals = defaultdict(list)
         track_to_overlaps = defaultdict(list)
-        role_to_demand = self.cfg['demands']
+        role_to_demand = cfg['demands']
         pairs_to_info = {}
 
         role_to_durations = {role: [midi.duration for midi in midis] for role, midis in self.role_to_midis.items()}
@@ -78,7 +78,7 @@ class MidiComb():
 
         # play no more than x samples at the same time, where x depends on the track role
         demands = [role_to_demand[role] for role, intervals in role_to_intervals.items() for _ in intervals]
-        self.model.AddCumulative(intervals, demands, self.cfg['capacity'])
+        self.model.AddCumulative(intervals, demands, cfg['capacity'])
 
         # if two samples overlap, make them start at the same time
         for t1, t2 in itertools.combinations(tracks, 2):
@@ -119,8 +119,8 @@ class MidiComb():
 
             for (t1, t2), info in pairs_to_info.items():
                 if t1 is track or t2 is track:
-                    self.model.Add(t2.start >= t1.end + self.cfg['padding']).OnlyEnforceIf([info.t1_before_t2, alone])
-                    self.model.Add(t1.start >= t2.end + self.cfg['padding']).OnlyEnforceIf([info.t2_before_t1, alone])
+                    self.model.Add(t2.start >= t1.end + cfg['padding']).OnlyEnforceIf([info.t1_before_t2, alone])
+                    self.model.Add(t1.start >= t2.end + cfg['padding']).OnlyEnforceIf([info.t2_before_t1, alone])
 
         # repeat half of the samples
         self.model.Add(sum(repeats) == len(repeats)//2)
@@ -132,7 +132,7 @@ class MidiComb():
 
     def solve(self) -> None:
         solver = cp_model.CpSolver()
-        status = solver.Solve(self.model, self.printer if self.cfg['debug'] else None)
+        status = solver.Solve(self.model)
 
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             shifted_midis = []
@@ -145,7 +145,7 @@ class MidiComb():
                         shifted_midis.append(midi.shift(solver.Value(self.role_to_tracks_opt[role][i].start)))
 
             merged = merge(shifted_midis)
-            merged.save(f'out/{self.timestamp}/merged.mid')
+            merged.save(f'out/{self.timestamp}/tune.mid')
 
         elif status == cp_model.INFEASIBLE:
             print(f'No solution found: the problem was proven infeasible')

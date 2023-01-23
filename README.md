@@ -31,7 +31,7 @@
     ```
 
 ## Run
-Run [`generate.py`](generate.py) with its required arguments, e.g.
+Run `generate.py` with its required arguments, e.g.
 ```
 $ python generate.py \
 --bpm 130 \
@@ -44,11 +44,11 @@ $ python generate.py \
 ```
 You can find a list of legal values for each argument [here](cfg/metadata.yaml).
 
-Once the program successfully terminates, you will find an [`out`](out) directory with the following structure
+Once the program successfully terminates, you will find an `out` directory with the following structure
 ```
 out
 └── <date>_<time>
     ├── metadata.yaml
     └── tune.mid
 ```
-where `metadata.yaml` contains the arguments you passed to `generate.py` and `tune.mid` is the generated midi file.
+where `metadata.yaml` contains the arguments you passed to `generate.py` and `tune.mid` is the generated MIDI file.

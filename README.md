@@ -6,7 +6,7 @@
     $ git clone https://github.com/frallebini/midicomb.git
     $ cd midicomb
     ```
-1. Create a virtual environment and install the required packages
+1. Create a virtual environment and install the required packages (the code has been tested with Python 3.11.0)
     ```
     $ python venv .venv
     $ source .venv/bin/activate

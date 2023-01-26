@@ -1,4 +1,4 @@
 mido==1.2.10
 ortools==9.5.2237
-pandas==1.5.2
+pandas==1.5.3
 PyYAML==6.0

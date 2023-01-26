@@ -1,5 +1,6 @@
 import itertools
 from collections import defaultdict, namedtuple
+from typing import Dict, List
 
 import yaml
 from ortools.sat.python import cp_model
@@ -9,7 +10,7 @@ from commufile import CommuFile, merge
 
 class MidiComb():
 
-    def __init__(self, role_to_midis: dict[str, list[CommuFile]], timestamp: str) -> None:
+    def __init__(self, role_to_midis: Dict[str, List[CommuFile]], timestamp: str) -> None:
         self.role_to_midis = role_to_midis
         self.timestamp = timestamp
 

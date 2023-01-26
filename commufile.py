@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from typing import List
 
 import yaml
 from mido import MidiFile, MidiTrack, merge_tracks
@@ -61,7 +62,7 @@ class CommuFile(MidiFile):
                 message.channel = CommuFile.channel_count
 
 
-def merge(midis: list[CommuFile]) -> MidiFile:
+def merge(midis: List[CommuFile]) -> MidiFile:
     merged = MidiFile()
     merged.tracks = [midi.track for midi in midis]
     return merged

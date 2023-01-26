@@ -1,6 +1,7 @@
 import random
 from collections import defaultdict
 from itertools import groupby
+from typing import Dict, List
 
 import pandas as pd
 
@@ -21,7 +22,7 @@ class CommuDataset:
             num_measures: int,
             genre: str,
             rhythm: str,
-            chord_progression: str) -> dict[str, list[CommuFile]]:
+            chord_progression: str) -> Dict[str, List[CommuFile]]:
         df_samples = self._get_sample_foreach_role(
             bpm,
             key,

@@ -18,7 +18,7 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
     $ source .venv/bin/activate
     $ pip install -r requirements.txt
     ```
-    Note: the code has been tested with Python `3.11.0`
+    Note: the code has been tested with Python `3.8.5`
 
 1. Unzip the dataset ([source](https://github.com/POZAlabs/ComMU-code/tree/master/dataset))
     ```

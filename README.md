@@ -1,17 +1,25 @@
 # MidiComb
 
+MidiComb is a program born as an extension of Hyun et al., 2022 ([paper](https://arxiv.org/abs/2211.09385) | [code](https://github.com/POZAlabs/ComMU-code)) and aimed at tackling the *combinatorial music generation* task. 
+
+See the [project page](https://frallebini.github.io/midicomb-demo) for more information.
+
 ## Setup
+
 1. Clone the repo and `cd` into its directory
     ```
     $ git clone https://github.com/frallebini/midicomb.git
     $ cd midicomb
     ```
-1. Create a virtual environment and install the required packages (the code has been tested with Python 3.11.0)
+
+1. Create a virtual environment and install the required packages
     ```
-    $ python venv .venv
+    $ python -m venv .venv
     $ source .venv/bin/activate
     $ pip install -r requirements.txt
     ```
+    Note: the code has been tested with Python `3.11.0`
+
 1. Unzip the dataset ([source](https://github.com/POZAlabs/ComMU-code/tree/master/dataset))
     ```
     $ tar -xvf dataset/commu_midi.tar -C dataset/
@@ -31,6 +39,7 @@
     ```
 
 ## Run
+
 Run `generate.py` with its required arguments, e.g.
 ```
 $ python generate.py \

@@ -20,7 +20,7 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
     ```
     Note: the code has been tested with Python `3.8.5`
 
-1. Unzip the dataset ([source](https://github.com/POZAlabs/ComMU-code/tree/master/dataset))
+1. Unzip the dataset
     ```
     $ tar -xvf dataset/commu_midi.tar -C dataset/
     ```
@@ -35,7 +35,8 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
     │   └── val
     │       └── raw
     │           └── midifiles(.mid)
-    └── commu_midi.tar
+    ├── commu_midi.tar
+    └── README.md
     ```
 
 ## Run

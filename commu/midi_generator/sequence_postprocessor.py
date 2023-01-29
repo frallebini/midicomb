@@ -20,14 +20,11 @@ class PostprocessTask:
 
     def set_output_file_path(self, index: int) -> Path:
         track_role = self.input_data.track_role
-        inst = self.input_data.inst
-        pitch_range = self.input_data.pitch_range
 
-        output_dir = Path(self.input_data.output_dir).joinpath(
-            f"{track_role}_{inst}_{pitch_range}")
+        output_dir = Path(self.input_data.output_dir)
         output_dir.mkdir(exist_ok=True, parents=True)
 
-        file_name = f"{track_role}_{inst}_{pitch_range}_{index:03d}.mid"
+        file_name = f"{track_role}.mid"
 
         return output_dir.joinpath(file_name)
 

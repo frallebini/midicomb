@@ -5,7 +5,7 @@ from typing import Dict, List
 import yaml
 from ortools.sat.python import cp_model
 
-from commufile import CommuFile, merge
+from commu_file import CommuFile, merge
 
 
 class MidiComb():

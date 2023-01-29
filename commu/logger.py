@@ -1,7 +1,7 @@
 import logging
 
 logger = logging.getLogger("ComMU")
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.ERROR)
 formatter = logging.Formatter("%(asctime)s | %(levelname)s | %(name)s | %(message)s")
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)

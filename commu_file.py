@@ -11,9 +11,9 @@ class CommuFile(MidiFile):
 
     channel_count = -1
     
-    def __init__(self, id: str, split: str, track_role: str, instrument: str) -> None:
-        super().__init__(f'dataset/commu_midi/{split}/raw/{id}.mid')
-        self._preprocess(track_role, instrument)
+    def __init__(self, filepath: str, name: str, instrument: str) -> None:
+        super().__init__(filepath)
+        self._preprocess(name, instrument)
 
     @property
     def track(self) -> MidiTrack:
@@ -31,11 +31,11 @@ class CommuFile(MidiFile):
                 message.time += time
         return shifted
         
-    def _preprocess(self, track_role: str, instrument: str) -> None:
+    def _preprocess(self, name: str, instrument: str) -> None:
         with open('cfg/programs.yaml') as f:
              inst_to_prog = yaml.safe_load(f)
         self._move_meta()
-        self._set_name(track_role)
+        self._set_name(name)
         self._set_program(inst_to_prog[instrument])
         self._set_channel()
 

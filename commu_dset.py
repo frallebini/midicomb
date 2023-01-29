@@ -1,11 +1,14 @@
+from __future__ import annotations
+
 import random
 from collections import defaultdict
 from itertools import groupby
-from typing import Dict, List
+from typing import Any, Dict, List, Tuple
 
 import pandas as pd
+import yaml
 
-from commufile import CommuFile
+from commu_file import CommuFile
 
 
 class CommuDataset:
@@ -13,6 +16,9 @@ class CommuDataset:
     def __init__(self) -> None:
         self.df = pd.read_csv('dataset/commu_meta.csv')
         self._preprocess()
+
+        with open('cfg/chord_progressions.yaml') as f:
+            self.fold_to_unfold = yaml.safe_load(f)
 
     def sample_midis(
             self,
@@ -36,7 +42,7 @@ class CommuDataset:
         midi_count = len(df_samples)
         indexes = df_samples.index.tolist()
 
-        while midi_count < len(self.df.track_role.unique()):
+        while midi_count < len(self.get_track_roles()):
             try:
                 role = random.choice(list(valid_roles))
                 sample = self._get_sample(
@@ -68,8 +74,7 @@ class CommuDataset:
             role = sample.track_role.item()
             name = f'{role}_{role_counts[role]}'
             midi = CommuFile(
-                sample.id.item(), 
-                sample.split.item(), 
+                f'dataset/commu_midi/{sample.split.item()}/raw/{sample.id.item()}.mid',
                 name, 
                 sample.instrument.item())
             role_counts[role] += 1
@@ -97,8 +102,8 @@ class CommuDataset:
 
         if df_query.empty:
             raise ValueError(
-                'No sample satifies the given conjunction of bpm, key, time-signature, ' +
-                'num_meaures, genre, rhythm, and chord-progression values. ' +
+                'No sample satifies the given conjunction of bpm, key, time signature, ' +
+                'number of meaures, genre, rhythm, and chord progression values. ' +
                 'Please try again with different values.')
         
         samples = []
@@ -155,6 +160,40 @@ class CommuDataset:
         self.df.chord_progression = self.df.chord_progression.apply(
             lambda cp: str([key for key, _ in groupby(cp[2:-2].replace('\'', '').split(', '))]
                 )[1:-1].replace('\'', '').replace(', ', '-'))
+
+    def unfold(self, chord_progression: str) -> str:
+        # BEFORE:
+        # 'Am-C-G-Dm-Am-C-G-D'
+        # AFTER:
+        # 'Am-Am-Am-Am-Am-Am-Am-Am-C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-
+        #  Dm-Dm-Dm-Dm-Dm-Dm-Dm-Dm-Am-Am-Am-Am-Am-Am-Am-Am-
+        #  C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-D-D-D-D-D-D-D-D'
+        return self.fold_to_unfold[chord_progression]
+
+    def sample_instrument(self, track_role: str) -> str:
+        return self._sample_by_counts('instrument', track_role, 'train').split('-')[0]
+
+    def sample_pitch_range(self, track_role: str) -> str:
+        return self._sample_by_counts('pitch_range', track_role, 'train')
+
+    def sample_min_max_velocity(self, track_role: str) -> Tuple[int, int]: 
+        min_v = 0
+        max_v = 0
+        while min_v >= max_v:
+            min_v = self._sample_by_counts('min_velocity', track_role, 'train')
+            max_v = self._sample_by_counts('max_velocity', track_role, 'train')
+        return min_v, max_v
+
+    def get_track_roles(self) -> List[str]:
+        return self.df.track_role.unique().tolist()
+
+    def _sample_by_counts(self, target: str, track_role: str, split: str | None = None) -> Any:
+        if split:
+            df = self.df[(self.df.track_role == track_role) & (self.df.split == split)]
+        else:
+            df = self.df[self.df.track_role == track_role]
+        counts = df[target].value_counts()
+        return counts.sample(weights=counts.values).index.item()
 
 
 DSET = CommuDataset()  # singleton

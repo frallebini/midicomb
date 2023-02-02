@@ -54,7 +54,7 @@ $ python generate.py \
 ```
 You can find a list of legal values for each argument [here](cfg/metadata.yaml).
 
-The above command produces a musical composition by combining samples from the dataset. If you instead want to combine new, generated samples, just add the `--generate_samples` flag, e.g.
+The above command produces a musical composition by combining samples from the dataset. If you want to combine new, generated samples instead, just add the `--generate_samples` flag, e.g.
 ```
 $ python generate.py \
 --bpm 130 \

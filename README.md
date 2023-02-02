@@ -54,6 +54,19 @@ $ python generate.py \
 ```
 You can find a list of legal values for each argument [here](cfg/metadata.yaml).
 
+The above command produces a musical composition by combining samples from the dataset. If you instead want to combine new, generated samples, just add the `--generate_samples` flag, e.g.
+```
+$ python generate.py \
+--bpm 130 \
+--key aminor \
+--time_signature 4/4 \
+--num_measures 8 \
+--genre newage \
+--rhythm standard \
+--chord_progression Am-F-C-G-Am-F-C-G \
+--generate_samples
+```
+
 Once the program successfully terminates, you will find an `out` directory with the following structure
 ```
 out
@@ -61,4 +74,4 @@ out
     ├── metadata.yaml
     └── tune.mid
 ```
-where `metadata.yaml` contains the arguments you passed to `generate.py` and `tune.mid` is the generated MIDI file.
+where `metadata.yaml` contains the arguments of the corresponding run of `generate.py` and `tune.mid` is the generated MIDI file.

@@ -6,25 +6,25 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
 
 ## Setup
 
-1. Clone the repo and `cd` into its directory
+1. Clone the repo and `cd` into its directory:
     ```
     $ git clone https://github.com/frallebini/midicomb.git
     $ cd midicomb
     ```
 
-1. Create a virtual environment and install the required packages
+1. Create a virtual environment and install the required packages:
     ```
     $ python -m venv .venv
     $ source .venv/bin/activate
     $ pip install -r requirements.txt
     ```
-    Note: the code has been tested with Python `3.8.5`
+    **Note:** the code has been tested with Python `3.8.5`
 
-1. Unzip the dataset
+1. Unzip the dataset:
     ```
     $ tar -xvf dataset/commu_midi.tar -C dataset/
     ```
-    The resulting directory structure should be
+    The resulting directory structure should be the following:
     ```
     dataset
     ├── commu_meta.csv
@@ -38,6 +38,14 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
     ├── commu_midi.tar
     └── README.md
     ```
+
+1. **[OPTIONAL]** If you want the samples to be generated (see the following section), download the model weights from [here](https://drive.google.com/file/d/1y0wl9JO8od3pLOMSxN8NwLy1PCJCyTGL/view?usp=share_link) and move them into the [`ckpt`](ckpt) directory:
+    ```
+    ckpt
+    ├── checkpoint_best.pt
+    └── README.md
+    ```
+    **Note:** the weights are provided by Hyun et al. together with their implementation.
 
 ## Run
 
@@ -68,7 +76,7 @@ $ python generate.py \
 ```
 **Note:** the above command runs either on CPU or on a single GPU. The available device will be detected automatically.
 
-Once the program successfully terminates, you will find an `out` directory with the following structure
+Once the program successfully terminates, you will find an `out` directory with the following structure:
 ```
 out
 └── <date>_<time>

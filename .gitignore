@@ -2,8 +2,8 @@ __pycache__
 .DS_Store
 .venv
 .vscode
-ckpt
 commu_midi
 out
 tutorial
+checkpoint_best.pt
 explore_dset.ipynb

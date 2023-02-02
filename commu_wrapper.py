@@ -26,7 +26,7 @@ def make_midis(
      
     for role in tqdm(DSET.get_track_roles()):
 
-        pipeline = MidiGenerationPipeline({'checkpoint_dir': 'ckpt/best.pt'})
+        pipeline = MidiGenerationPipeline({'checkpoint_dir': 'ckpt/checkpoint_best.pt'})
 
         inference_cfg = pipeline.model_initialize_task.inference_cfg
         model = pipeline.model_initialize_task.execute()

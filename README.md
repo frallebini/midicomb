@@ -24,7 +24,7 @@ See the [project page](https://frallebini.github.io/midicomb-demo) for more info
     ```
     $ tar -xvf dataset/commu_midi.tar -C dataset/
     ```
-    The resulting directory structure should be the following:
+    You should get the following directory structure:
     ```
     dataset
     ├── commu_meta.csv

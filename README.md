@@ -66,6 +66,7 @@ $ python generate.py \
 --chord_progression Am-F-C-G-Am-F-C-G \
 --generate_samples
 ```
+**Note:** the above command runs either on CPU or on a single GPU. The available device will be detected automatically.
 
 Once the program successfully terminates, you will find an `out` directory with the following structure
 ```
@@ -74,4 +75,4 @@ out
     ├── metadata.yaml
     └── tune.mid
 ```
-where `metadata.yaml` contains the arguments of the corresponding run of `generate.py` and `tune.mid` is the generated MIDI file.
+where `metadata.yaml` contains the arguments of the corresponding run and `tune.mid` is the generated MIDI file.

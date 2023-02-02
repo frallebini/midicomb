@@ -20,6 +20,9 @@ class CommuDataset:
         with open('cfg/chord_progressions.yaml') as f:
             self.fold_to_unfold = yaml.safe_load(f)
 
+    def get_track_roles(self) -> List[str]:
+        return self.df.track_role.unique().tolist()
+
     def sample_midis(
             self,
             bpm: int,
@@ -81,6 +84,66 @@ class CommuDataset:
             role_to_midis[role].append(midi)
 
         return role_to_midis
+    
+    def sample_instrument(self, track_role: str) -> str:
+        return self._sample('instrument', track_role).split('-')[0]
+
+    def sample_pitch_range(self, track_role: str) -> str:
+        return self._sample('pitch_range', track_role, 'train', weighted=True)
+
+    def sample_min_max_velocity(self, track_role: str) -> Tuple[int, int]: 
+        min_v = 0
+        max_v = 0
+        while min_v >= max_v:
+            min_v = self._sample('min_velocity', track_role, 'train', weighted=True)
+            max_v = self._sample('max_velocity', track_role, 'train', weighted=True)
+        return min_v, max_v
+
+    def unfold(self, chord_progression: str) -> str:
+        # BEFORE:
+        # 'Am-C-G-Dm-Am-C-G-D'
+        # AFTER:
+        # 'Am-Am-Am-Am-Am-Am-Am-Am-C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-
+        #  Dm-Dm-Dm-Dm-Dm-Dm-Dm-Dm-Am-Am-Am-Am-Am-Am-Am-Am-
+        #  C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-D-D-D-D-D-D-D-D'
+        return self.fold_to_unfold[chord_progression]
+
+    def _clean_chord_progression(self) -> None:
+        # BEFORE:
+        # "[['Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 
+        #    'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 
+        #    'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 
+        #    'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 
+        #    'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 
+        #    'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 
+        #    'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 
+        #    'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D']]"
+        # AFTER:
+        # 'Am-C-G-Dm-Am-C-G-D'
+        self.df.chord_progression = self.df.chord_progression.apply(
+            lambda cp: str([key for key, _ in groupby(cp[2:-2].replace('\'', '').split(', '))]
+                )[1:-1].replace('\'', '').replace(', ', '-'))
+
+    def _get_sample(
+            self,
+            track_role: str,
+            bpm: int,
+            key: str,
+            time_signature: str,
+            num_measures: int,
+            genre: str,
+            rhythm: str,
+            chord_progression: str) -> pd.DataFrame:
+        return self.df[
+            (self.df.track_role == track_role) &
+            (self.df.bpm == bpm) &
+            (self.df.key == key) &
+            (self.df.time_signature == time_signature) &
+            (self.df.num_measures == num_measures) &
+            (self.df.genre == genre) &
+            (self.df.rhythm == rhythm) &
+            (self.df.chord_progression == chord_progression)
+        ].sample()
 
     def _get_sample_foreach_role(
             self,
@@ -113,27 +176,6 @@ class CommuDataset:
         
         return pd.concat(samples)
 
-    def _get_sample(
-            self,
-            track_role: str,
-            bpm: int,
-            key: str,
-            time_signature: str,
-            num_measures: int,
-            genre: str,
-            rhythm: str,
-            chord_progression: str) -> pd.DataFrame:
-        return self.df[
-            (self.df.track_role == track_role) &
-            (self.df.bpm == bpm) &
-            (self.df.key == key) &
-            (self.df.time_signature == time_signature) &
-            (self.df.num_measures == num_measures) &
-            (self.df.genre == genre) &
-            (self.df.rhythm == rhythm) &
-            (self.df.chord_progression == chord_progression)
-        ].sample()
-
     def _preprocess(self) -> None:
         self.df.drop(columns=self.df.columns[0], inplace=True)
         self.df.rename(columns={
@@ -145,55 +187,13 @@ class CommuDataset:
         }, inplace=True)
         self._clean_chord_progression()
 
-    def _clean_chord_progression(self) -> None:
-        # BEFORE:
-        # "[['Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 
-        #    'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 
-        #    'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 
-        #    'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 'Dm', 
-        #    'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 'Am', 
-        #    'C', 'C', 'C', 'C', 'C', 'C', 'C', 'C', 
-        #    'G', 'G', 'G', 'G', 'G', 'G', 'G', 'G', 
-        #    'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D']]"
-        # AFTER:
-        # 'Am-C-G-Dm-Am-C-G-D'
-        self.df.chord_progression = self.df.chord_progression.apply(
-            lambda cp: str([key for key, _ in groupby(cp[2:-2].replace('\'', '').split(', '))]
-                )[1:-1].replace('\'', '').replace(', ', '-'))
-
-    def unfold(self, chord_progression: str) -> str:
-        # BEFORE:
-        # 'Am-C-G-Dm-Am-C-G-D'
-        # AFTER:
-        # 'Am-Am-Am-Am-Am-Am-Am-Am-C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-
-        #  Dm-Dm-Dm-Dm-Dm-Dm-Dm-Dm-Am-Am-Am-Am-Am-Am-Am-Am-
-        #  C-C-C-C-C-C-C-C-G-G-G-G-G-G-G-G-D-D-D-D-D-D-D-D'
-        return self.fold_to_unfold[chord_progression]
-
-    def sample_instrument(self, track_role: str) -> str:
-        return self._sample_by_counts('instrument', track_role, 'train').split('-')[0]
-
-    def sample_pitch_range(self, track_role: str) -> str:
-        return self._sample_by_counts('pitch_range', track_role, 'train')
-
-    def sample_min_max_velocity(self, track_role: str) -> Tuple[int, int]: 
-        min_v = 0
-        max_v = 0
-        while min_v >= max_v:
-            min_v = self._sample_by_counts('min_velocity', track_role, 'train')
-            max_v = self._sample_by_counts('max_velocity', track_role, 'train')
-        return min_v, max_v
-
-    def get_track_roles(self) -> List[str]:
-        return self.df.track_role.unique().tolist()
-
-    def _sample_by_counts(self, target: str, track_role: str, split: str | None = None) -> Any:
+    def _sample(self, target: str, track_role: str, split: str | None = None, weighted: bool = False) -> Any:
         if split:
             df = self.df[(self.df.track_role == track_role) & (self.df.split == split)]
         else:
             df = self.df[self.df.track_role == track_role]
         counts = df[target].value_counts()
-        return counts.sample(weights=counts.values).index.item()
+        return counts.sample(weights=counts.values if weighted else None).index.item()
 
 
 DSET = CommuDataset()  # singleton

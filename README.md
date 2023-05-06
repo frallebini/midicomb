@@ -1,8 +1,6 @@
-# MidiComb
+# MusiComb
 
-MidiComb is a program born as an extension of Hyun et al., 2022 ([paper](https://arxiv.org/abs/2211.09385) | [code](https://github.com/POZAlabs/ComMU-code)) and aimed at tackling the *combinatorial music generation* task. 
-
-See the [project page](https://frallebini.github.io/midicomb-demo) for more information.
+MusiComb is a program born as an extension of Hyun et al., 2022 ([paper](https://arxiv.org/abs/2211.09385) | [code](https://github.com/POZAlabs/ComMU-code)) and aimed at tackling the *combinatorial music generation* task. 
 
 ## Setup
 

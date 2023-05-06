@@ -8,7 +8,7 @@ from ortools.sat.python import cp_model
 from commu_file import CommuFile, merge
 
 
-class MidiComb():
+class MusiComb():
 
     def __init__(self, role_to_midis: Dict[str, List[CommuFile]], timestamp: str) -> None:
         self.role_to_midis = role_to_midis

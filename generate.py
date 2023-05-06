@@ -6,7 +6,7 @@ import yaml
 
 from commu_dset import DSET
 from commu_wrapper import make_midis
-from midicomb import MidiComb
+from musicomb import MusiComb
 
 
 def main(args: argparse.Namespace, timestamp: str) -> None:
@@ -30,7 +30,7 @@ def main(args: argparse.Namespace, timestamp: str) -> None:
             args.rhythm,
             args.chord_progression)
 
-    MidiComb(role_to_midis, timestamp).solve()
+    MusiComb(role_to_midis, timestamp).solve()
 
 
 if __name__ == '__main__':

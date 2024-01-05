@@ -1,6 +1,8 @@
 # MusiComb
 
-MusiComb is a program born as an extension of Hyun et al., 2022 ([paper](https://arxiv.org/abs/2211.09385) | [code](https://github.com/POZAlabs/ComMU-code)) and aimed at tackling the *combinatorial music generation* task. 
+Official code for [MusiComb: a Sample-based Approach to Music Generation Through Constraints](https://ieeexplore.ieee.org/abstract/document/10356504) (ICTAI 2023).
+
+See the [Project page](https://frallebini.github.io/musicomb-demo) for some demos.
 
 ## Setup
 
